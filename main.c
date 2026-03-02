@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <conio.h>
 
+#define VER "02.03.2026.1"
+
 GapBuffer gb;
 int show_gap_buffer = 0;
 
@@ -79,6 +81,8 @@ int handleInputAfterESC(char** argv){
 }
 
 int main(int argc, char** argv){
+    SetConsoleOutputCP(CP_UTF8);
+    system("cls");
     printf("\033[?25l");
     initGb(&gb, 100);
     
@@ -104,6 +108,8 @@ int main(int argc, char** argv){
 
             if (c == 27) {
                 system("cls");
+                printf("versão " VER "\n");
+
                 printf("Para salvar, aperte 'S'.\nPara mostrar/esconder o buffer, aperte 'G'.\n\nPara voltar, aperte 'V'.\nPara sair, aperte 'ESC' novamente.");
                 int r = handleInputAfterESC(argv);
                 if (r) break;
