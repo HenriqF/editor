@@ -1,143 +1,121 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "rw/readwrite.h"
+#include "gap/gap.h"
+
 #include <unistd.h>
 #include <windows.h>
-#include <math.h>
+#include <conio.h>
 
-//coisa do arquivo
+GapBuffer gb;
+int show_gap_buffer = 0;
 
-typedef struct{
-    int length;
-    char* conetudo;
-}linha;
+/*
+    muito maneiro:
+    salvar e carregar posicao cursor
+        printf("\033[s");
+        printf("\033[u");
 
-typedef struct{
-    int qtdlinhas;
-    linha* linhas;
-}arquivo;
-arquivo arq;
-
-char* content;
-size_t size;
+    esconder mostrar cursor
+        printf("\033[?25l");
+        printf("\033[?25h");
+*/
 
 
-void abrirarquivo(){
-    FILE* file = fopen("read.txt", "rb");
-    if (!file){
-        return;
-    }
-    fseek(file, 0, SEEK_END);
-    size = ftell(file);
-    fseek(file, 0, SEEK_SET);
 
-    content = malloc(size+1);
-    if (content){
-        size = fread(content, 1, size, file);
-        content[size] = '\0';
-    }
-    fclose(file);
-}
-void salvararquivo(){
-    FILE* file = fopen("read.txt", "wb");
-    if (!file){
-        return;
-    }
-    for(int i = 0; i < arq.qtdlinhas; i++){
-        fprintf(file, "%s", arq.linhas[i].conetudo);
-    }
-    fclose(file);
+void handleKBInput(char c){
+    if (c == 13) insertChar(&gb, '\n');
+
+    else if (c == 8) deleteChar(&gb);
+
+    else insertChar(&gb, c);
+    
+    //printf("\033[2J\033[H");
+    system("cls");
+    renderBuff(gb, show_gap_buffer);
 }
 
+void handleSPInput(char c){
+    if (c == 75) moveLeft(&gb);
+    else if (c == 77) moveRight(&gb);
 
-
-void addLine(int starti, int endi){
-    int len = endi-starti;
-    char* noval = malloc(len+1);
-    memcpy(noval, content+starti, len);
-    noval[len] = '\0';
-    linha l = {len, noval};
-
-    linha* buff = realloc(arq.linhas, (arq.qtdlinhas+1)*sizeof(linha));
-    arq.linhas = buff;
-    arq.linhas[arq.qtdlinhas] = l;
-    arq.qtdlinhas++;
+    //printf("\033[2J\033[H");
+    system("cls");
+    renderBuff(gb, show_gap_buffer);
 }
 
-void getarqstruct(){
-    int i = 0;
-    int lineStartIndex = 0;
+int handleInputAfterESC(char** argv){
+    while (1) if (_kbhit()){
+        char c = _getch();
 
-    while (i < size){
-        if (content[i] == '\n'){
-            addLine(lineStartIndex, i+1);
-            lineStartIndex=i+1;
+        if (c == 83 || c == 115){//s
+            FILE* f = fopen(argv[1], "wb");
+            if (!f){
+                printf("\narquivo nao encontrado.");
+                continue;
+            }
+            writeFile(f, getText(gb));
+            fclose(f);
+            printf("\nSalvo em: %s", argv[1]);
         }
-        i++;
-    }
-    addLine(lineStartIndex, i);
-}
-
-void listLines(){
-    for(int i = 0; i < arq.qtdlinhas; i++){
-        printf("%s", arq.linhas[i].conetudo);
-    }
-}
-////
-
-//coisa do console
-
-CONSOLE_SCREEN_BUFFER_INFO csbi;
-int cols, rows;
-void updateConsoleSize(){
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
-    cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
-    rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-}
-
-static DWORD oldmode;
-void rawMode() {
-    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-    GetConsoleMode(h, &oldmode);
-    DWORD m = oldmode;
-    m &= ~ENABLE_ECHO_INPUT;
-    m &= ~ENABLE_LINE_INPUT;
-    m &= ~ENABLE_PROCESSED_INPUT;
-    m &= ~ENABLE_WINDOW_INPUT;
-    m &= ~ENABLE_MOUSE_INPUT;
-    SetConsoleMode(h, m);
-}
-void cookMode() {
-    HANDLE h = GetStdHandle(STD_INPUT_HANDLE);
-    SetConsoleMode(h, oldmode);
-}
-
-HANDLE h;
-INPUT_RECORD r;
-DWORD n;
-int getCharInput(){
-    ReadConsoleInput(h, &r, 1, &n);
-    if (r.EventType == KEY_EVENT && r.Event.KeyEvent.bKeyDown) {
-        int c = r.Event.KeyEvent.uChar.AsciiChar;
-        if (c == 27){
+        else if (c == 86 || c == 118){//v
+            system("cls");
+            renderBuff(gb, show_gap_buffer);
+            break;
         }
-        return(c);
+        else if (c == 71 || c == 103){
+            show_gap_buffer = !show_gap_buffer;
+            if (show_gap_buffer){
+                printf("\nMostrando buffer.");
+            }
+            else{
+                printf("\nBuffer escondido.");
+            }
+        }
+        else if (c == 27){
+            return 1;
+        }
     }
+
+    return 0;
 }
 
-////
+int main(int argc, char** argv){
+    printf("\033[?25l");
+    initGb(&gb, 100);
+    
+    size_t content_size;
+    char* content;
+    FILE* f;
+    if (argc == 2){
+        f = fopen(argv[1], "rb");
+        if (!f){
+            printf("arquivo nao encontrado.");
+            return 0;
+        }
+        readFile(f, &content_size, &content);
+        fclose(f);
+        insertString(&gb, content, content_size);
+    }
 
+    renderBuff(gb, show_gap_buffer);;
 
-int cols, rows;
+    while (1) {
+        if (_kbhit()){
+            char c = _getch();
 
+            if (c == 27) {
+                system("cls");
+                printf("Para salvar, aperte 'S'.\nPara mostrar/esconder o buffer, aperte 'G'.\n\nPara voltar, aperte 'V'.\nPara sair, aperte 'ESC' novamente.");
+                int r = handleInputAfterESC(argv);
+                if (r) break;
+                
+            }
 
-
-int main(){
-    rawMode();
-    abrirarquivo();
-    getarqstruct();
-    listLines();
-    salvararquivo();
-
-    cookMode();
+            else if (c == -32){
+                handleSPInput(_getch());
+            }
+            else handleKBInput(c);
+        }
+        
+    }
     return 0;
 }

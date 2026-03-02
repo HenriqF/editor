@@ -1,0 +1,7 @@
+#include <stdio.h>
+
+int main(){
+	printf("Testeeeee teste");
+	return 0;
+}
+//oko k michale jackson hee-hee
