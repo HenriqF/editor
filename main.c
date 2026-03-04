@@ -1,11 +1,11 @@
 #include "rw/readwrite.h"
 #include "gap/gap.h"
+#include "gap/render.h"
 
-#include <unistd.h>
 #include <windows.h>
 #include <conio.h>
 
-#define VER "02.03.2026.1"
+#define VER "03.03.2026.1"
 
 GapBuffer gb;
 int show_gap_buffer = 0;
@@ -22,7 +22,6 @@ int show_gap_buffer = 0;
 */
 
 
-
 void handleKBInput(char c){
     if (c == 13) insertChar(&gb, '\n');
 
@@ -30,18 +29,16 @@ void handleKBInput(char c){
 
     else insertChar(&gb, c);
     
-    //printf("\033[2J\033[H");
-    system("cls");
-    renderBuff(gb, show_gap_buffer);
+    render(gb);
 }
 
 void handleSPInput(char c){
     if (c == 75) moveLeft(&gb);
     else if (c == 77) moveRight(&gb);
+    else if (c == 72) moveUp(&gb);
+    else if (c == 80) moveDown(&gb);
 
-    //printf("\033[2J\033[H");
-    system("cls");
-    renderBuff(gb, show_gap_buffer);
+    render(gb);
 }
 
 int handleInputAfterESC(char** argv){
@@ -60,7 +57,7 @@ int handleInputAfterESC(char** argv){
         }
         else if (c == 86 || c == 118){//v
             system("cls");
-            renderBuff(gb, show_gap_buffer);
+            render(gb);
             break;
         }
         else if (c == 71 || c == 103){
@@ -73,6 +70,7 @@ int handleInputAfterESC(char** argv){
             }
         }
         else if (c == 27){
+            printf("\033[?25h");
             return 1;
         }
     }
@@ -82,8 +80,9 @@ int handleInputAfterESC(char** argv){
 
 int main(int argc, char** argv){
     SetConsoleOutputCP(CP_UTF8);
-    system("cls");
+    printf("\e[1;1H\e[2J");
     printf("\033[?25l");
+
     initGb(&gb, 100);
     
     size_t content_size;
@@ -100,7 +99,8 @@ int main(int argc, char** argv){
         insertString(&gb, content, content_size);
     }
 
-    renderBuff(gb, show_gap_buffer);;
+    moveStart(&gb);
+    render(gb);
 
     while (1) {
         if (_kbhit()){

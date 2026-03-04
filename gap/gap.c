@@ -13,11 +13,6 @@ void initGb(GapBuffer* gb, size_t gap_size){
 
 
 //getting content
-void printValid(char c){ 
-    if (isprint(c) || c == '\n' || c == '\r' || c == '\t') printf("%c",c);
-    else printf("[!]");
-}
-
 char* getText(GapBuffer gb){
     char* result = malloc(gb.buffer_size*sizeof(char)+1);
 
@@ -33,23 +28,6 @@ char* getText(GapBuffer gb){
     return result;
 }
 
-void renderBuff(GapBuffer gb, int s){
-    for(size_t i = 0; i < gb.gapl; i++){
-        printValid(gb.buffer[i]);
-
-    }
-    printf(GBBLU "<" GBRESET);
-    
-    if(s == 1){
-        for(size_t i = gb.gapl; i < gb.gapr+1; i++) printf(GBRED "_" GBRESET);
-    }
-    
-    for(size_t i = gb.gapr+1; i < gb.buffer_size; i++){
-        printValid(gb.buffer[i]);
-    }
-}
-
-
 //grow
 void grow(GapBuffer* gb){
     char* temp = realloc(gb->buffer, gb->buffer_size+gb->gap_size);
@@ -63,15 +41,14 @@ void grow(GapBuffer* gb){
     if (gb->gapr < gb->buffer_size-gb->gap_size-1){
         size_t afteri = gb->gapl+1;
         size_t aftere = gb->buffer_size-gb->gap_size-1;
-        size_t l = aftere-afteri+1;
+        size_t l = gb->buffer_size-gb->gap_size-1-gb->gapr;
 
-        memmove(gb->buffer+(gb->buffer_size-l), gb->buffer+afteri, l);
-        memset(gb->buffer+afteri, '\0', l);
+        memmove(gb->buffer+(gb->buffer_size-l), gb->buffer+afteri, l);  
+        memset(gb->buffer+afteri, '\0', gb->gap_size);
     }
 
     gb->gapr += gb->gap_size;
 }
-
 
 //insert, delete
 void insertChar(GapBuffer* gb, char c){
@@ -122,4 +99,22 @@ void moveRight(GapBuffer* gb){
     gb->buffer[gb->gapr] = gb->buffer[gb->gapl];
     gb->buffer[gb->gapl] = temp;
     gb->gapl++;
+}
+
+void moveUp(GapBuffer* gb){
+    while((gb->gapl > 0) && (gb->buffer[gb->gapl-1] != '\n')){
+        moveLeft(gb);
+    }
+    if (gb->gapl > 0)moveLeft(gb);
+}
+
+void moveDown(GapBuffer* gb){
+    while((gb->gapr < gb->buffer_size-1) && (gb->buffer[gb->gapr+1] != '\n')){
+        moveRight(gb);
+    }
+    if (gb->gapr < gb->buffer_size-1)moveRight(gb);
+}
+
+void moveStart(GapBuffer* gb){
+    while(gb->gapl != 0) moveLeft(gb);
 }

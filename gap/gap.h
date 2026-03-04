@@ -10,6 +10,8 @@
 #define GBBLU "\x1b[34m"
 #define GBRESET "\x1b[0m"
 
+#define CURSOR "<"
+
 typedef struct{
     char* buffer;
     size_t buffer_size;
@@ -22,9 +24,7 @@ typedef struct{
 void initGb(GapBuffer* gb, size_t gap_size);
 
 //getting content
-void printValid(char c);
 char* getText(GapBuffer gb);
-void renderBuff(GapBuffer gb, int s);
 
 //grow
 void grow(GapBuffer* gb);
@@ -37,5 +37,10 @@ void deleteChar(GapBuffer* gb);
 //movingfs
 void moveLeft(GapBuffer* gb);
 void moveRight(GapBuffer* gb);
+
+void moveUp(GapBuffer* gb);
+void moveDown(GapBuffer* gb);
+
+void moveStart(GapBuffer* gb);
 
 #endif
