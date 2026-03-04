@@ -10,7 +10,7 @@ int handleChar(char c){
 
 
 
-void render(GapBuffer gb){
+void render(GapBuffer gb, int s){
     printf("\033[1;1H");
     system("cls");
 
@@ -25,7 +25,7 @@ void render(GapBuffer gb){
     if (start_index>0)start_index++;
 
 
-    for(; (max_index < gb.buffer_size-1 && line_count <= LINEQTD*2); max_index++){   
+    for(; (max_index < gb.buffer_size && line_count <= LINEQTD*2); max_index++){   
         if(gb.buffer[max_index] == '\n'){
             line_count++;
         }
@@ -37,8 +37,11 @@ void render(GapBuffer gb){
     }
 
     printf(GBBLU CURSOR GBRESET);
-    for(size_t i = gb.gapl; i < gb.gapr+1; i++) printf(GBRED "_" GBRESET);
-    // printf(GBRED "(%d %d %d) " GBRESET,gb.gapl, gb.gapr, gb.buffer_size);
+    if (s){
+        for(size_t i = gb.gapl; i < gb.gapr+1; i++) printf(GBRED "_" GBRESET);
+        printf(GBRED "(%d %d %d) " GBRESET,gb.gapl, gb.gapr, gb.buffer_size);
+    }
+
 
     for(size_t i = gb.gapr+1; i < max_index; i++){
         handleChar(gb.buffer[i]);

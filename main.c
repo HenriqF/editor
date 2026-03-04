@@ -29,7 +29,7 @@ void handleKBInput(char c){
 
     else insertChar(&gb, c);
     
-    render(gb);
+    render(gb, show_gap_buffer);
 }
 
 void handleSPInput(char c){
@@ -38,7 +38,7 @@ void handleSPInput(char c){
     else if (c == 72) moveUp(&gb);
     else if (c == 80) moveDown(&gb);
 
-    render(gb);
+    render(gb, show_gap_buffer);
 }
 
 int handleInputAfterESC(char** argv){
@@ -57,7 +57,7 @@ int handleInputAfterESC(char** argv){
         }
         else if (c == 86 || c == 118){//v
             system("cls");
-            render(gb);
+            render(gb, show_gap_buffer);
             break;
         }
         else if (c == 71 || c == 103){
@@ -100,7 +100,7 @@ int main(int argc, char** argv){
     }
 
     moveStart(&gb);
-    render(gb);
+    render(gb, show_gap_buffer);
 
     while (1) {
         if (_kbhit()){

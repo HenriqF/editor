@@ -3,6 +3,6 @@
 
 #include "gap.h"
 
-void render(GapBuffer gb);
+void render(GapBuffer gb, int s);
 
 #endif
