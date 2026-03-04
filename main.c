@@ -23,11 +23,21 @@ int show_gap_buffer = 0;
 
 
 void handleKBInput(char c){
-    if (c == 13) insertChar(&gb, '\n');
 
-    else if (c == 8) deleteChar(&gb);
-
-    else insertChar(&gb, c);
+    switch (c){
+        case 13:
+            insertChar(&gb, '\n');
+            break;
+        case -121:
+            insertChar(&gb, -61);
+            insertChar(&gb, -89);
+            break;
+        case 8:
+            deleteChar(&gb);
+            break;
+        default:
+            insertChar(&gb, c);
+    }
     
     render(gb, show_gap_buffer);
 }
@@ -84,7 +94,7 @@ int main(int argc, char** argv){
     printf("\033[?25l");
 
     initGb(&gb, 100);
-    
+
     size_t content_size;
     char* content;
     FILE* f;
@@ -99,7 +109,7 @@ int main(int argc, char** argv){
         insertString(&gb, content, content_size);
     }
 
-    moveStart(&gb);
+    //moveStart(&gb);
     render(gb, show_gap_buffer);
 
     while (1) {

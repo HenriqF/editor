@@ -3,7 +3,10 @@
 #define LINEQTD 10
 
 int handleChar(char c){
-    if (isprint(c) || c == '\t' || c == '\r' || c == '\n') printf("%c",c);
+    // printf("[%d]", c);
+    // return 0;
+    if (c == '\r');
+    else if (isprint(c) || c == '\t' || c == '\n' || c < 0) printf("%c",c);
     else printf("[%d]", c);
     return 0;
 }

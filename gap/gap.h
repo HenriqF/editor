@@ -38,6 +38,7 @@ void deleteChar(GapBuffer* gb);
 void moveLeft(GapBuffer* gb);
 void moveRight(GapBuffer* gb);
 
+void moveToCol(GapBuffer* gb, int col);
 void moveUp(GapBuffer* gb);
 void moveDown(GapBuffer* gb);
 

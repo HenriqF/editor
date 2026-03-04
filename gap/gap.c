@@ -101,18 +101,41 @@ void moveRight(GapBuffer* gb){
     gb->gapl++;
 }
 
-void moveUp(GapBuffer* gb){
+void moveToCol(GapBuffer* gb, int col){
     while((gb->gapl > 0) && (gb->buffer[gb->gapl-1] != '\n')){
         moveLeft(gb);
     }
+    while((gb->buffer[gb->gapr+1] != '\n') && col-- > 0){
+        moveRight(gb);
+    }
+}
+
+void moveUp(GapBuffer* gb){
+    int col = 0;
+
+    while((gb->gapl > 0) && (gb->buffer[gb->gapl-1] != '\n')){
+        moveLeft(gb);
+        col++;
+    }
     if (gb->gapl > 0)moveLeft(gb);
+
+    moveToCol(gb, col);
 }
 
 void moveDown(GapBuffer* gb){
+    int col = 0;
+    int index = gb->gapl;
+    while((index  > 0) && (gb->buffer[index-1] != '\n')){
+        index--;
+        col++;
+    }
+
     while((gb->gapr < gb->buffer_size-1) && (gb->buffer[gb->gapr+1] != '\n')){
         moveRight(gb);
     }
     if (gb->gapr < gb->buffer_size-1)moveRight(gb);
+
+    moveToCol(gb, col);
 }
 
 void moveStart(GapBuffer* gb){
