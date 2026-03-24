@@ -40,7 +40,6 @@ void grow(GapBuffer* gb){
 
     if (gb->gapr < gb->buffer_size-gb->gap_size-1){
         size_t afteri = gb->gapl+1;
-        size_t aftere = gb->buffer_size-gb->gap_size-1;
         size_t l = gb->buffer_size-gb->gap_size-1-gb->gapr;
 
         memmove(gb->buffer+(gb->buffer_size-l), gb->buffer+afteri, l);  

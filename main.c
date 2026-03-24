@@ -1,35 +1,56 @@
 #include "rw/readwrite.h"
 #include "gap/gap.h"
 #include "gap/render.h"
+#include "util/util.h"
 
 #include <windows.h>
 #include <conio.h>
 
-#define VER "04.03.2026.1"
+//info
+    //geral
+    #define VER "24.03.2026.1"
+    char* editor_file_path;
 
+    //cmdbar
+    #define CMDBARDOWN 2
+    char last_cmd_bar_msg[500];
+    #define LCBMINFO last_cmd_bar_msg, 500
+
+    //config
+    extern int relative_mode;
+
+//gbs
+
+#define EDITORBUFSIZE 100
+#define BARBUFSIZE 20
 GapBuffer editor;
-char* editor_file_path;
-
 GapBuffer bar;
-
 GapBuffer* gb;
-int show_gap_buffer = 0;
 
+
+//configs
+int show_gap_buffer = 0;
 int down_offset = 0;
 int command_bar_mode = 0;
 
-/*
-    muito maneiro:
-    salvar e carregar posicao cursor
-        printf("\033[s");
-        printf("\033[u");
 
-    esconder mostrar cursor
-        printf("\033[?25l");
-        printf("\033[?25h");
-*/
+int loadFile(GapBuffer* gb, char* path){
+    initGb(gb, EDITORBUFSIZE);
+    size_t content_size;
+    char* content;
 
+    FILE* f;
+    f = fopen(path, "rb");
+    if (!f){
+        return 1;
+    }
+    readFile(f, &content_size, &content);
+    fclose(f);
+    insertString(gb, content, content_size);
+    return 0;
+}
 
+//
 void handleKBInput(char c){
 
     switch (c){
@@ -72,14 +93,16 @@ BarAcReturn handleBarActions(char* command){
 
         FILE* f = fopen(editor_file_path, "wb");
         if (!f){
-            printf("\narquivo nao encontrado.");
+            snprintf(LCBMINFO, "Arquivo nao encontrado: %s", editor_file_path);
+            gb = &bar;
             return CONT;
         }
         char* text = getText(*gb);
         writeFile(f, text);
         fclose(f);
         free(text);
-        printf("\nSalvo em: %s", editor_file_path);
+
+        snprintf(LCBMINFO, "Salvo em: %s", editor_file_path);
 
         gb = &bar;
         return CONT;
@@ -98,29 +121,67 @@ BarAcReturn handleBarActions(char* command){
         return BREAK;
     }
 
+    if (strcmp(command, "rel") == 0){
+        relative_mode = !relative_mode;
+        if (relative_mode) snprintf(LCBMINFO, "Linhas em modo relativo");
+        else snprintf(LCBMINFO, "Linhas em modo absoluto");
+        return CONT;
+    }
+
+    if (strcmp(command, "ajuda") == 0){
+        snprintf(LCBMINFO, 
+            "Lista de comandos:\n\n"
+            "'s'      : salvar\n"
+            "'v'      : voltar\n"
+            "'sair'   : fecha o programa\n"
+            "'run '   : abre o terminal e roda um comando\n"
+            "'change ': troca o arquivo\n"
+            "'rel'    : alterna entre linhas relativas e absolutas\n"
+        );
+        return CONT;
+    }
+
     if (strcmp(command, "sair") == 0){
         return EXIT;
     }
 
+
+    if (startsWith(command, "run ") == 1){
+        char* rest = command+3;
+        size_t len_command = strlen(rest);
+        char buffer[14+len_command];
+
+        snprintf(buffer, 14+len_command, "start cmd /k %s", rest);
+        system(buffer);
+        return CONT;
+    }
     
+    if (startsWith(command, "change ") == 1){
+        char* temp = command+7;
+        size_t len_path = strlen(temp)+1;
+
+
+        char* new_path = malloc(len_path*sizeof(char));
+        snprintf(new_path, len_path, "%s", command+7);
+
+
+        if (loadFile(&editor, new_path) == 0){
+            free(editor_file_path);
+            editor_file_path = new_path;
+            snprintf(LCBMINFO, "Agora editando: %s", editor_file_path);
+            return CONT;
+        }
+
+        snprintf(LCBMINFO, "Nao encontrado: %s", new_path);
+        return CONT;
+    }
+
+    snprintf(LCBMINFO, "Comando desconhecido.");
     return CONT;
 }
 
 
-void loadFile(GapBuffer* gb, char* path){
-    size_t content_size;
-    char* content;
 
-    FILE* f;
-    f = fopen(path, "rb");
-    if (!f){
-        printf("arquivo nao encontrado.");
-        return;
-    }
-    readFile(f, &content_size, &content);
-    fclose(f);
-    insertString(gb, content, content_size);
-}
 
 
 int main(int argc, char** argv){
@@ -128,18 +189,26 @@ int main(int argc, char** argv){
     printf("\e[1;1H\e[2J");
     printf("\033[?25l");
 
-    initGb(&editor, 100);
-    initGb(&bar, 20);
+    initGb(&editor, EDITORBUFSIZE);
+    initGb(&bar, BARBUFSIZE);
+    relative_mode = 0;
 
     gb = &editor;
 
-
     if (argc == 2){
-        editor_file_path = argv[1];
+        char* temp = argv[1];
+        size_t len_path = strlen(temp)+1;
+
+        char* new_path = malloc(len_path*sizeof(char));
+        snprintf(new_path, len_path, "%s", argv[1]);
+        editor_file_path = new_path;
+
         loadFile(gb, editor_file_path);
     }
 
     //moveStart(gb);
+    
+
     render(*gb, show_gap_buffer, down_offset);
 
     while (1) {
@@ -148,9 +217,9 @@ int main(int argc, char** argv){
 
             if (command_bar_mode && c == 13){
                 char* bar_text = getText(*gb);
-
                 BarAcReturn r = handleBarActions(bar_text);
                 free(bar_text);
+
                 if (r == BREAK){
                     system("cls");
                     gb = &editor;
@@ -164,8 +233,7 @@ int main(int argc, char** argv){
                     break;
                 }
                 
-
-                initGb(&bar, 20);
+                initGb(&bar, BARBUFSIZE);
                 system("cls");
                 render(*gb, show_gap_buffer, down_offset);
             }
@@ -173,11 +241,11 @@ int main(int argc, char** argv){
             else if (c == 27) { //entrar bar mode
                 system("cls");
                 gb = &bar;
-                down_offset = 8;
+                down_offset = CMDBARDOWN;
                 command_bar_mode = 1;
                 
                 render(*gb, show_gap_buffer, down_offset);
-            }
+            }   
 
             else if (c == -32){
                 handleSPInput(_getch());
@@ -185,13 +253,11 @@ int main(int argc, char** argv){
             else handleKBInput(c);
 
             if (command_bar_mode){
-                printf(
-                    "versão " VER ". Comandos: \n"
-                    "Salvar: 'S' | 's'.\n"
-                    "Voltar ao editor: 'V' | 'v'.\n"
-                    "Para mostrar/esconder o buffer: 'G' | 'g'.\n"
-                    "Para sair: 'sair'."
-                );
+                printf("versão " VER ". Execute 'ajuda' para saber mais.");
+
+                for (int i = 0; i < CMDBARDOWN+2; i++)printf("\n");
+
+                printf("%s", last_cmd_bar_msg);
             }
         }
         

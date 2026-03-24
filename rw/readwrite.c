@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "readwrite.h"
 
 int readFile(FILE* f, size_t* size, char** content){
     if (!f || !size || !content) return -1;
