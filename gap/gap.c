@@ -101,10 +101,12 @@ void moveRight(GapBuffer* gb){
     gb->gapl++;
 }
 
+
 void moveToCol(GapBuffer* gb, int col){
     while((gb->gapl > 0) && (gb->buffer[gb->gapl-1] != '\n')){
         moveLeft(gb);
     }
+
     while((gb->buffer[gb->gapr+1] != '\n') && col-- > 0){
         moveRight(gb);
     }

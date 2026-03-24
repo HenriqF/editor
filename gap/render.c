@@ -12,10 +12,11 @@ int handleChar(char c){
 }
 
 
-
-void render(GapBuffer gb, int s){
+int render_down = 0;
+void render(GapBuffer gb, int s, int down_offset){
     printf("\033[1;1H");
     system("cls");
+    for (int i = 0; i < down_offset; i++) printf("\n");
 
     size_t start_index = gb.gapl;
     size_t max_index = gb.gapr+1;
@@ -49,4 +50,6 @@ void render(GapBuffer gb, int s){
     for(size_t i = gb.gapr+1; i < max_index; i++){
         handleChar(gb.buffer[i]);
     }
+    printf("\033[1;1H");
 }
+
