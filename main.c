@@ -8,7 +8,7 @@
 
 //info
     //geral
-    #define VER "24.03.2026.1"
+    #define VER "25.03.2026.1"
     char* editor_file_path;
 
     //cmdbar
@@ -130,13 +130,16 @@ BarAcReturn handleBarActions(char* command){
 
     if (strcmp(command, "ajuda") == 0){
         snprintf(LCBMINFO, 
-            "Lista de comandos:\n\n"
+            "Lista de comandos:\n"
             "'s'      : salvar\n"
             "'v'      : voltar\n"
             "'sair'   : fecha o programa\n"
-            "'run '   : abre o terminal e roda um comando\n"
-            "'change ': troca o arquivo\n"
-            "'rel'    : alterna entre linhas relativas e absolutas\n"
+            "'rel'    : alterna entre linhas relativas e absolutas\n\n"
+
+            "Comandos com argumentos:\n"
+            "'run'    : abre o terminal e roda um comando\n"
+            "'change' : troca o arquivo\n"
+            "'cursor' : troca o cursor\n"
         );
         return CONT;
     }
@@ -175,6 +178,17 @@ BarAcReturn handleBarActions(char* command){
         snprintf(LCBMINFO, "Nao encontrado: %s", new_path);
         return CONT;
     }
+    if (startsWith(command, "cursor ") == 1){
+        char* temp = command+7;
+        size_t len = strlen(temp)+1;
+        char* new_cursor = malloc(len*sizeof(char));
+        snprintf(new_cursor, len, "%s", command+7);
+
+        free(cursor);
+        cursor = new_cursor;
+
+        return CONT;
+    }
 
     snprintf(LCBMINFO, "Comando desconhecido.");
     return CONT;
@@ -191,7 +205,15 @@ int main(int argc, char** argv){
 
     initGb(&editor, EDITORBUFSIZE);
     initGb(&bar, BARBUFSIZE);
+
+
+    //
     relative_mode = 0;
+    cursor = malloc(2*sizeof(char));
+    cursor[0] = '<';
+    cursor[1] = 0;
+
+    //
 
     gb = &editor;
 

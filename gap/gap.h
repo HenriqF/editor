@@ -11,8 +11,6 @@
 #define GBLGRAY "\x1b[90m"
 #define GBRESET "\x1b[0m"
 
-#define CURSOR "<"
-
 typedef struct{
     char* buffer;
     size_t buffer_size;

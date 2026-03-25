@@ -1,7 +1,9 @@
 #include "render.h"
 
-#define LINEQTD 8
+#define LINEQTD 10
 #define LINEPADDING 5
+char* cursor;
+
 void printDown(){
     for (int i = 0; i < 20; i++) printf("\n");
 }
@@ -103,7 +105,7 @@ void render(GapBuffer gb, int s, int down_offset){
         handleChar(gb.buffer[i]);
     }
 
-    printf(GBRED CURSOR GBRESET);
+    printf(GBRED "%s" GBRESET, cursor);
     if (s){
         for(size_t i = gb.gapl; i < gb.gapr+1; i++) printf(GBRED "_" GBRESET);
         printf(GBRED "(%lld %lld %lld) " GBRESET,gb.gapl, gb.gapr, gb.buffer_size);
