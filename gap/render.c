@@ -4,9 +4,12 @@
 #define LINES 23 
 #define SCREEN_SIZE 2001 //incluir terminador nulo
 char screen[SCREEN_SIZE] = {0};
-char new_screen[SCREEN_SIZE] = {0};
 
+char new_screen[SCREEN_SIZE] = {0};
+int new_screen_ignore_count[LINES];
 size_t new_screen_index = 0;
+size_t nsig_index = 0;
+
 void terminalRenderScreen(int down_offset){
     printf("\033[%d;1H", down_offset);
 
@@ -16,7 +19,7 @@ void terminalRenderScreen(int down_offset){
 
     size_t nsl = 0;
     int new_screen_lines_size[LINES] = {0};
-    size_t current_new_screen_ls = 0;
+    size_t new_screen_ls = 0;
 
     for (int i = 0 ; i < SCREEN_SIZE; i++){
         if (screen[i] == '\n' || screen[i] == '\0'){
@@ -27,16 +30,33 @@ void terminalRenderScreen(int down_offset){
 
 
         if (new_screen[i] == '\n' || new_screen[i] == '\0'){
-            if (nsl < LINES) new_screen_lines_size[nsl++] = current_new_screen_ls;
-            current_new_screen_ls = 0;
+            if (nsl < LINES) {
+                int ignore_count = new_screen_ignore_count[nsl];
+                new_screen_lines_size[nsl++] = new_screen_ls-ignore_count;
+            }
+            new_screen_ls = 0;
         } 
-        else current_new_screen_ls++;
+        else new_screen_ls++;
 
         screen[i] = new_screen[i];
     }
 
 
-    size_t diff_size = sl>nsl ? sl : nsl;
+    // printf("\n\n%lld %lld\n", sl, nsl);
+    // for (int i = 0; i < LINES; i++){
+    //     printf("[%d]", new_screen_ignore_count[i]);
+    // }
+    // printf("\n");
+
+
+    // printf("\nlinhassize: ");
+    // for (size_t i = 0 ; i < nsl; i++){
+    //     printf("[%d]", new_screen_lines_size[i]);
+    // }
+    // printf("\n");
+
+
+    size_t diff_size = sl;
     int line_size_diff[LINES] = {0};
 
 
@@ -80,6 +100,8 @@ void terminalRenderScreen(int down_offset){
 
     fim_funcao:
     // printf("\n[%s]\n", tela_buffer);
+
+
     printf("%s", tela_buffer);
 }
 //======================================================
@@ -89,7 +111,7 @@ void terminalRenderScreen(int down_offset){
 #define LINEPADDING 5
 char* cursor;
 char* GBACCENT;
-
+size_t GBACCENT_SIZE;
 
 int relative_mode = 0;
 int current_line;
@@ -184,34 +206,42 @@ void render(GapBuffer gb, int s, int down_offset){
     current_line = 0;
 
     new_screen_index = 0;
-    for (int i = 0; i < SCREEN_SIZE; i++) new_screen[i] = 0;
+    nsig_index = 0;
+    for (int i = 0; i < SCREEN_SIZE; i++){
+        new_screen[i] = 0;
+        if (i < LINES) new_screen_ignore_count[i] = 0; 
+    }
 
-
+    
     size_t start_index = gb.gapl;
     size_t max_index = gb.gapr+1;
     size_t line_count = 0;
 
-
     for(size_t i = 0; i < start_index; i++) if(gb.buffer[i] == '\n') current_line++;
 
-    for(; (start_index > 0 && line_count <= LINEQTD); start_index--){
+    for(; (line_count <= LINEQTD); start_index--){
         if(gb.buffer[start_index] == '\n'){
             line_count++;
             above_count++;
         }
+        if (start_index == 0) break;
     }
-    if (line_count > LINEQTD) start_index+=2;
 
+
+    if (line_count > LINEQTD) start_index+=2;
 
     for(; (max_index < gb.buffer_size && line_count <= LINEQTD*2+1); max_index++){   
         if(gb.buffer[max_index] == '\n')line_count++;
     }
 
-
     if (above_count > LINEQTD) above_count = LINEQTD;
 
 
-    
+    //remover cursor da contagem
+    new_screen_ignore_count[above_count] = GBACCENT_SIZE+5;
+
+    // printf("\n\n");
+    // printf("%d %d %d", above_count, current_line, below_count);
 
     //render 
     putLineCount();
@@ -219,6 +249,9 @@ void render(GapBuffer gb, int s, int down_offset){
     for(size_t i = start_index; i < gb.gapl; i++){
         handleChar(gb.buffer[i]);
     }
+
+    
+
 
     putStringNS(GBACCENT);
     putStringNS(cursor);

@@ -6,16 +6,28 @@
 #include <string.h>
 #include <ctype.h>
 
-#define GBRED "\x1b[31m"
-#define GBBLU "\x1b[34m"
-#define GBGRN "\x1b[32m"
-#define GBYEL "\x1b[33m"
-#define GBPUR "\x1b[35m"
+#ifdef COLORLESS
+    #define GBRED ""
+    #define GBBLU ""
+    #define GBGRN ""
+    #define GBYEL ""
+    #define GBPUR ""
 
-#define GBLGRAY "\x1b[90m"
-#define GBRESET "\x1b[0m"
-extern char* GBACCENT;
+    #define GBLGRAY ""
+    #define GBRESET ""
+    #define GBACCENT ""
+#else
+    #define GBRED "\x1b[31m"
+    #define GBBLU "\x1b[34m"
+    #define GBGRN "\x1b[32m"
+    #define GBYEL "\x1b[33m"
+    #define GBPUR "\x1b[35m"
 
+    #define GBLGRAY "\x1b[90m"
+    #define GBRESET "\x1b[0m"
+    extern char* GBACCENT;
+    extern size_t GBACCENT_SIZE;
+#endif
 
 
 typedef struct{

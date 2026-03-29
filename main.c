@@ -190,12 +190,12 @@ BarAcReturn handleBarActions(char* command){
         snprintf(new_cor, len_cor, "%s", command+6);
 
         snprintf(LCBMINFO, "Nova cor: %s", new_cor);
-        if (strcmp(new_cor, "red") == 0) strncpy(GBACCENT, GBRED, 7);
-        else if (strcmp(new_cor, "blue") == 0) strncpy(GBACCENT, GBBLU, 7);
-        else if (strcmp(new_cor, "yellow") == 0) strncpy(GBACCENT, GBYEL, 7);
-        else if (strcmp(new_cor, "green") == 0) strncpy(GBACCENT, GBGRN, 7);
-        else if (strcmp(new_cor, "purple") == 0) strncpy(GBACCENT, GBPUR, 7);
-        else if (strcmp(new_cor, "white") == 0) strncpy(GBACCENT, GBRESET, 7);
+        if (strcmp(new_cor, "red") == 0) strncpy(GBACCENT, GBRED, 6);
+        else if (strcmp(new_cor, "blue") == 0) strncpy(GBACCENT, GBBLU, 6);
+        else if (strcmp(new_cor, "yellow") == 0) strncpy(GBACCENT, GBYEL, 6);
+        else if (strcmp(new_cor, "green") == 0) strncpy(GBACCENT, GBGRN, 6);
+        else if (strcmp(new_cor, "purple") == 0) strncpy(GBACCENT, GBPUR, 6);
+        else if (strcmp(new_cor, "white") == 0) strncpy(GBACCENT, GBRESET, 6);
         else{
         snprintf(LCBMINFO, "Cor '%s' não existe.", new_cor);
         }
@@ -240,8 +240,9 @@ int main(int argc, char** argv){
 
     
 
-    GBACCENT = malloc(7*sizeof(char));
-    strncpy(GBACCENT, GBGRN, 7);
+    GBACCENT = malloc(6*sizeof(char));
+    strncpy(GBACCENT, GBBLU, 6);
+    GBACCENT_SIZE = 5;
 
     //
 
