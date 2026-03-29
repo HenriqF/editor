@@ -10,6 +10,9 @@
 #define GBBLU "\x1b[34m"
 #define GBLGRAY "\x1b[90m"
 #define GBRESET "\x1b[0m"
+#define GBACCENT "\x1b[31m"
+
+
 
 typedef struct{
     char* buffer;

@@ -61,6 +61,9 @@ void handleKBInput(char c){
             insertChar(gb, -61);
             insertChar(gb, -89);
             break;
+        case 9:
+            insertString(gb, "    ", 4);
+            break;
         case 8:
             deleteChar(gb);
             break;
@@ -275,6 +278,7 @@ int main(int argc, char** argv){
             else handleKBInput(c);
 
             if (command_bar_mode){
+                printf("\033[1;1H");
                 printf("versão " VER ". Execute 'ajuda' para saber mais.");
 
                 for (int i = 0; i < CMDBARDOWN+2; i++)printf("\n");
