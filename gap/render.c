@@ -88,6 +88,7 @@ void terminalRenderScreen(int down_offset){
 #define LINEQTD 10
 #define LINEPADDING 5
 char* cursor;
+char* GBACCENT;
 
 
 int relative_mode = 0;
@@ -225,7 +226,8 @@ void render(GapBuffer gb, int s, int down_offset){
 
     //DEBUG
     if (s){
-        for(size_t i = gb.gapl; i < gb.gapr+1; i++) putStringNS(GBACCENT "_");
+        putStringNS(GBACCENT);
+        for(size_t i = gb.gapl; i < gb.gapr+1; i++) putStringNS("_");
 
         char debug_info[230] = {0};
         snprintf(debug_info, 230, "(%lld %lld %lld)" GBRESET,gb.gapl, gb.gapr, gb.buffer_size);

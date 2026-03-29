@@ -8,11 +8,11 @@
 
 //info
     //geral
-    #define VER "25.03.2026.1"
+    #define VER "29.03.2026.1"
     char* editor_file_path;
 
     //cmdbar
-    #define CMDBARDOWN 2
+    #define CMDBARDOWN 3
     char last_cmd_bar_msg[500];
     #define LCBMINFO last_cmd_bar_msg, 500
 
@@ -143,14 +143,15 @@ BarAcReturn handleBarActions(char* command){
             "'run'    : abre o terminal e roda um comando\n"
             "'change' : troca o arquivo\n"
             "'cursor' : troca o cursor\n"
+            "'color'  : troca a cor de destaque"
         );
         return CONT;
     }
 
     if (strcmp(command, "sair") == 0){
+        handleBarActions("s");
         return EXIT;
     }
-
 
     if (startsWith(command, "run ") == 1){
         char* rest = command+3;
@@ -181,6 +182,27 @@ BarAcReturn handleBarActions(char* command){
         snprintf(LCBMINFO, "Nao encontrado: %s", new_path);
         return CONT;
     }
+
+    if (startsWith(command, "color ") == 1){
+        char* temp = command+6;
+        size_t len_cor = strlen(temp)+1;
+        char* new_cor = malloc(len_cor*sizeof(char));
+        snprintf(new_cor, len_cor, "%s", command+6);
+
+        snprintf(LCBMINFO, "Nova cor: %s", new_cor);
+        if (strcmp(new_cor, "red") == 0) strncpy(GBACCENT, GBRED, 7);
+        else if (strcmp(new_cor, "blue") == 0) strncpy(GBACCENT, GBBLU, 7);
+        else if (strcmp(new_cor, "yellow") == 0) strncpy(GBACCENT, GBYEL, 7);
+        else if (strcmp(new_cor, "green") == 0) strncpy(GBACCENT, GBGRN, 7);
+        else if (strcmp(new_cor, "purple") == 0) strncpy(GBACCENT, GBPUR, 7);
+        else if (strcmp(new_cor, "white") == 0) strncpy(GBACCENT, GBRESET, 7);
+        else{
+        snprintf(LCBMINFO, "Cor '%s' não existe.", new_cor);
+        }
+
+        return CONT;
+    }
+
     if (startsWith(command, "cursor ") == 1){
         char* temp = command+7;
         size_t len = strlen(temp)+1;
@@ -212,9 +234,14 @@ int main(int argc, char** argv){
 
     //
     relative_mode = 0;
+
     cursor = malloc(2*sizeof(char));
-    cursor[0] = '<';
-    cursor[1] = 0;
+    strncpy(cursor, "<", 2);
+
+    
+
+    GBACCENT = malloc(7*sizeof(char));
+    strncpy(GBACCENT, GBGRN, 7);
 
     //
 
@@ -281,7 +308,7 @@ int main(int argc, char** argv){
                 printf("\033[1;1H");
                 printf("versão " VER ". Execute 'ajuda' para saber mais.");
 
-                for (int i = 0; i < CMDBARDOWN+2; i++)printf("\n");
+                for (int i = 0; i < CMDBARDOWN+1; i++)printf("\n");
 
                 printf("%s", last_cmd_bar_msg);
             }

@@ -8,9 +8,13 @@
 
 #define GBRED "\x1b[31m"
 #define GBBLU "\x1b[34m"
+#define GBGRN "\x1b[32m"
+#define GBYEL "\x1b[33m"
+#define GBPUR "\x1b[35m"
+
 #define GBLGRAY "\x1b[90m"
 #define GBRESET "\x1b[0m"
-#define GBACCENT "\x1b[31m"
+extern char* GBACCENT;
 
 
 
