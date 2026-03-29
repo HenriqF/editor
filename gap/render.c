@@ -40,14 +40,10 @@ void terminalRenderScreen(int down_offset){
     int line_size_diff[LINES] = {0};
 
 
-    printf("\n\n\n\n");
     for (size_t i = 0 ; i < diff_size; i++){
         line_size_diff[i] = new_screen_lines_size[i]-screen_lines_size[i];
-        printf("[%d]", line_size_diff[i]);
     }
     
-    printf("\n");
-
 
     char tela_buffer[SCREEN_SIZE] = {0};
     size_t buf_i = 0;
@@ -69,20 +65,21 @@ void terminalRenderScreen(int down_offset){
         }
     }
 
-    for (size_t i = diff_size-lines_seen; i < diff_size; i++){
+    for (size_t i = lines_seen; i < diff_size; i++){
+
         if (buf_i == SCREEN_SIZE-1) goto fim_funcao;
         tela_buffer[buf_i++] = '\n';
-        
+
         for (int j = 0; j > line_size_diff[i]; j--){
             if (buf_i == SCREEN_SIZE-1) goto fim_funcao;
-            tela_buffer[buf_i++] = '-';
+            tela_buffer[buf_i++] = ' ';
         }
     }
 
-    printf("(%lld %lld %lld)\n", lines_seen, diff_size, diff_size-lines_seen);
+    // printf("(visto:%lld total:%lld falta:%lld)\n", lines_seen, diff_size, diff_size-lines_seen);
 
     fim_funcao:
-    //printf("[\n%s\n]", tela_buffer);
+    // printf("\n[%s]\n", tela_buffer);
     printf("%s", tela_buffer);
 }
 //======================================================
