@@ -8,7 +8,7 @@
 
 //info
     //geral
-    #define VER "29.03.2026.1"
+    #define VER "31.03.2026.1"
     char* editor_file_path;
 
     //cmdbar
@@ -52,7 +52,7 @@ int loadFile(GapBuffer* gb, char* path){
 
 //
 void handleKBInput(char c){
-
+    //printf("[%c]", c);
     switch (c){
         case 13:
             insertChar(gb, '\n');
@@ -75,10 +75,18 @@ void handleKBInput(char c){
 }
 
 void handleSPInput(char c){
+    //printf("[%d]", c);
+
     if (c == 75) moveLeft(gb);
     else if (c == 77) moveRight(gb);
     else if (c == 72) moveUp(gb);
     else if (c == 80) moveDown(gb);
+
+    else if (c == 115) moveLeftWord(gb);
+    else if (c == 116) moveRightWord(gb); 
+
+    else if (c == -115) moveUpAbsolute(gb);
+    else if (c == -111) moveDownAbsolute(gb);
 
     render(*gb, show_gap_buffer, down_offset);
 }

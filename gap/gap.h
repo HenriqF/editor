@@ -30,6 +30,12 @@
 #endif
 
 
+typedef enum{
+    ALNUM,
+    SPACE,
+    OTHER,
+} CharType;
+
 typedef struct{
     char* buffer;
     size_t buffer_size;
@@ -61,5 +67,12 @@ void moveUp(GapBuffer* gb);
 void moveDown(GapBuffer* gb);
 
 void moveStart(GapBuffer* gb);
+
+void moveLeftWord(GapBuffer* gb);
+void moveRightWord(GapBuffer* gb);
+
+void moveUpAbsolute(GapBuffer* gb);
+void moveDownAbsolute(GapBuffer* gb);
+
 
 #endif
