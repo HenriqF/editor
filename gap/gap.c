@@ -153,7 +153,6 @@ CharType get_char_type(char c){
 }
 
 
-
 void moveUpAbsolute(GapBuffer* gb){
     while((gb->gapl > 0) && (gb->buffer[gb->gapl-1] != '\n')) moveLeft(gb);
     if (gb->gapl > 0)moveLeft(gb);

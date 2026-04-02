@@ -8,7 +8,7 @@
 
 //info
     //geral
-    #define VER "31.03.2026.1"
+    #define VER "02.04.2026.1"
     char* editor_file_path;
 
     //cmdbar
@@ -75,8 +75,6 @@ void handleKBInput(char c){
 }
 
 void handleSPInput(char c){
-    //printf("[%d]", c);
-
     if (c == 75) moveLeft(gb);
     else if (c == 77) moveRight(gb);
     else if (c == 72) moveUp(gb);
@@ -87,6 +85,12 @@ void handleSPInput(char c){
 
     else if (c == -115) moveUpAbsolute(gb);
     else if (c == -111) moveDownAbsolute(gb);
+
+    render(*gb, show_gap_buffer, down_offset);
+}
+
+void handleZRInput(char c){
+    insertChar(gb, c);
 
     render(*gb, show_gap_buffer, down_offset);
 }
@@ -229,8 +233,6 @@ BarAcReturn handleBarActions(char* command){
 
 
 
-
-
 int main(int argc, char** argv){
     SetConsoleOutputCP(CP_UTF8);
     printf("\e[1;1H\e[2J");
@@ -267,7 +269,7 @@ int main(int argc, char** argv){
         loadFile(gb, editor_file_path);
     }
 
-    //moveStart(gb);
+    moveStart(gb);
     
 
     render(*gb, show_gap_buffer, down_offset);
@@ -308,9 +310,10 @@ int main(int argc, char** argv){
                 render(*gb, show_gap_buffer, down_offset);
             }   
 
-            else if (c == -32){
-                handleSPInput(_getch());
-            }
+            else if (c == -32) handleSPInput(_getch());
+                
+            else if (c == 0) handleZRInput(_getch());
+                
             else handleKBInput(c);
 
             if (command_bar_mode){
