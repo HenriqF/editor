@@ -56,7 +56,7 @@ void terminalRenderScreen(int down_offset){
 
     for (int i = 0; i < SCREEN_SIZE; i++){
         if (new_screen[i] == '\n' || new_screen[i] == '\0'){
-            for (int j = 0; j > line_size_diff[lines_seen]; j--) {
+            for (int j = 0; j >= line_size_diff[lines_seen]; j--) {
                 if (buf_i == SCREEN_SIZE-1) goto fim_funcao;
                 tela_buffer[buf_i++] = ' ';
             }
@@ -280,15 +280,13 @@ void render(GapBuffer gb, int s, int down_offset){
             new_screen_ignore_count[render_line_counter] = GBACCENT_SIZE+4;
         }
 
-
+    
     for(size_t i = gb.gapr+1; i < max_index; i++, char_counter++){
         if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
         handleChar(gb.buffer[i]);
         if (gb.buffer[i] == '\n') render_line_counter++;
     }
     if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
-
-
 
     terminalRenderScreen(down_offset);
     //printf("\n\n{[starti:%lld maxi:%lld], [selectionv:%d selection^:%d], cc:%lld}", start_index, max_index, selection_min, selection_max, char_counter);
