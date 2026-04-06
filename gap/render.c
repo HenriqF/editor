@@ -86,8 +86,10 @@ void terminalRenderScreen(int down_offset){
 
     fwrite(tela_buffer, 1, buf_i, stdout);
 }
+
 //======================================================
 
+char* reset = GBRESET;
 
 size_t LINEQTD = (LINES-1)/2;
 #define LINEPADDING 5
@@ -119,6 +121,8 @@ void putStringNS(char* str){
 
 int lines_called = 0;
 void putLineCount(){
+    putStringNS(reset);
+
     if (lines_called++ == LINES) return;
     int grayed = 1;
     int current = 0;
@@ -161,9 +165,24 @@ void putLineCount(){
 
     for (int i = length; i < LINEPADDING; i++)putCharNS(' ');
 
-    putStringNS(GBRESET " ");
+    putStringNS(reset);
+    putStringNS(" ");
 }    
 
+
+void handleHighlights(size_t cur, size_t sel_max, size_t sel_min, int cur_line){
+    if (cur == sel_min){
+        reset = GBACCENT;
+        putStringNS(reset);
+        new_screen_ignore_count[cur_line] += GBCOLOR_SIZE;
+    }
+    
+    if (cur == sel_max){
+        reset = GBRESET;
+        putStringNS(reset);
+        new_screen_ignore_count[cur_line] += GBCOLOR_SIZE;
+    }
+}
 
 int handleChar(char c){
     if (c == '\r');
@@ -215,37 +234,62 @@ void render(GapBuffer gb, int s, int down_offset){
         if(gb.buffer[max_index] == '\n')line_count++;
     }
 
-    //remover cursor da contagem
-    new_screen_ignore_count[above_count] = GBACCENT_SIZE+5;
+
 
     //render 
-    putLineCount();
+    size_t current_gbgap_size = (gb.gapr+1)-gb.gapl;
 
-    for(size_t i = start_index; i < gb.gapl; i++){
-        handleChar(gb.buffer[i]);
+    int selection_min = -1;
+    int selection_max = -1;
+    if (selection_start >= 0){
+        selection_min = selection_start < (int)gb.gapl ? selection_start : (int)gb.gapl;
+        selection_max = selection_start > (int)gb.gapl ? selection_start : (int)gb.gapl;
+
+        if (selection_min < (int)start_index) selection_min = start_index;
+        if (selection_max > (int)(max_index-current_gbgap_size)) selection_max = max_index-current_gbgap_size;
     }
+
+    int render_line_counter = 0;
+    size_t char_counter = start_index;
+
+
+    putLineCount();
+    for(size_t i = start_index; i < gb.gapl; i++, char_counter++){
+        if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
+        handleChar(gb.buffer[i]);
+        if (gb.buffer[i] == '\n') render_line_counter++;
+    }
+
+    //if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
+    new_screen_ignore_count[render_line_counter] += GBACCENT_SIZE+5;
 
     putStringNS(GBACCENT);
     putStringNS(cursor);
-    putStringNS(GBRESET);
+    putStringNS(reset);
 
-    //DEBUG
-    if (s){
-        putStringNS(GBACCENT);
-        for(size_t i = gb.gapl; i < gb.gapr+1; i++) putStringNS("_");
+        //DEBUG
+        if (s){
+            putStringNS(GBACCENT);
+            for(size_t i = gb.gapl; i < gb.gapr+1; i++) putStringNS("_");
 
-        char debug_info[230] = {0};
-        snprintf(debug_info, 230, "(%lld %lld %lld)" GBRESET,gb.gapl, gb.gapr, gb.buffer_size);
+            char debug_info[230] = {0};
+            snprintf(debug_info, 230, "(%lld %lld %lld)%s" ,gb.gapl, gb.gapr, gb.buffer_size, reset);
 
-        putStringNS(debug_info);
-        putStringNS(GBRESET);
-    }
+            putStringNS(debug_info);
+
+            new_screen_ignore_count[render_line_counter] = GBACCENT_SIZE+4;
+        }
 
 
-    for(size_t i = gb.gapr+1; i < max_index; i++){
+    for(size_t i = gb.gapr+1; i < max_index; i++, char_counter++){
+        if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
         handleChar(gb.buffer[i]);
+        if (gb.buffer[i] == '\n') render_line_counter++;
     }
+    if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
+
+
 
     terminalRenderScreen(down_offset);
-    
+    //printf("\n\n{[starti:%lld maxi:%lld], [selectionv:%d selection^:%d], cc:%lld}", start_index, max_index, selection_min, selection_max, char_counter);
 }

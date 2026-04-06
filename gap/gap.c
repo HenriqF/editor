@@ -1,5 +1,7 @@
 #include "gap.h"
 
+int selection_start = -1;
+
 //init
 void initGb(GapBuffer* gb, size_t gap_size){
     if (gap_size < 1) gap_size = 1;
