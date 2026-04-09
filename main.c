@@ -3,12 +3,11 @@
 #include "gap/render.h"
 #include "util/util.h"
 
-#include <windows.h>
 #include <conio.h>
 
 //info
     //geral
-    #define VER "05.04.2026.1"
+    #define VER "08.04.2026.1"
     char* editor_file_path;
 
     //cmdbar
@@ -25,7 +24,6 @@
 GapBuffer editor;
 GapBuffer bar;
 GapBuffer* gb;
-
 
 //configs
 int show_gap_buffer = 0;
@@ -56,6 +54,14 @@ int loadFile(GapBuffer* gb, char* path){
 
 //
 void handleKBInput(char c){
+    if (gb->selecting >= 0){
+        if (!shift_pressed) {
+            gb->selecting = 0;
+            gb->selection_start = -1;
+        }
+    }
+    
+    
     switch (c){
         case 13:
             insertChar(gb, '\n');
@@ -79,11 +85,16 @@ void handleKBInput(char c){
 }
 
 
-int selecting = 0;
 void handleSPInput(char c){
-    if (shift_pressed && !selecting){
-        selecting = 1;
-        selection_start = gb->gapl;
+    if (gb->selecting >= 0){
+        if (shift_pressed && !gb->selecting){
+            gb->selecting = 1;
+            gb->selection_start = gb->gapl;
+        }
+        if (!shift_pressed) {
+            gb->selecting = 0;
+            gb->selection_start = -1;
+        }
     }
     
 
@@ -163,6 +174,7 @@ BarAcReturn handleBarActions(char* command){
             "'s'      : salvar\n"
             "'v'      : voltar\n"
             "'sair'   : fecha o programa\n"
+            "'copy'   : copia seleção\n"
             "'rel'    : alterna entre linhas relativas e absolutas\n\n"
 
             "Comandos com argumentos:\n"
@@ -177,6 +189,22 @@ BarAcReturn handleBarActions(char* command){
     if (strcmp(command, "sair") == 0){
         handleBarActions("s");
         return EXIT;
+    }
+
+    if (strcmp(command, "copy") == 0){
+        if (editor.selecting <= 0){
+            snprintf(LCBMINFO, "sem seleção...");
+            return CONT;
+        }
+        int selection_min = editor.selection_start < (int)editor.gapl ? editor.selection_start : (int)editor.gapl;
+        int selection_max = editor.selection_start > (int)editor.gapl ? editor.selection_start : (int)editor.gapl;
+
+        char* string = getCursorSubstring(editor, (size_t)selection_min, (size_t)selection_max);
+        copyToClipBoard(string);
+        free(string);
+
+        snprintf(LCBMINFO, "copiado!");
+        return CONT;
     }
 
     if (startsWith(command, "run ") == 1){
@@ -254,6 +282,7 @@ int main(int argc, char** argv){
 
     initGb(&editor, EDITORBUFSIZE);
     initGb(&bar, BARBUFSIZE);
+    bar.selecting = -1;
     gb = &editor;
 
     //
@@ -285,10 +314,6 @@ int main(int argc, char** argv){
             if (GetAsyncKeyState(VK_SHIFT) < 0) shift_pressed = 1;
             else shift_pressed = 0;
             char c = _getch();
-            if (c != -32 || !shift_pressed) {
-                selecting = 0;
-                selection_start = -1;
-            }
 
             if (command_bar_mode && c == 13){
                 char* bar_text = getText(*gb);

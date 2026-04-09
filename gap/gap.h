@@ -45,14 +45,17 @@ typedef struct{
 
     size_t gapl; //index gapleft
     size_t gapr; //gapright
+
+    int selection_start;
+    int selecting; // -1 not allowed; 0 no; 1 yes
 } GapBuffer;
 
 
-extern int selection_start;
 
 void initGb(GapBuffer* gb, size_t gap_size);
 
 //getting content
+char* getCursorSubstring(GapBuffer gb, size_t min, size_t max);
 char* getText(GapBuffer gb);
 
 //grow

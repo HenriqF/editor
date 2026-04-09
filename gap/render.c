@@ -239,8 +239,11 @@ void render(GapBuffer gb, int s, int down_offset){
     //render 
     size_t current_gbgap_size = (gb.gapr+1)-gb.gapl;
 
+    int selection_start = gb.selection_start;
     int selection_min = -1;
     int selection_max = -1;
+
+
     if (selection_start >= 0){
         selection_min = selection_start < (int)gb.gapl ? selection_start : (int)gb.gapl;
         selection_max = selection_start > (int)gb.gapl ? selection_start : (int)gb.gapl;
@@ -287,7 +290,7 @@ void render(GapBuffer gb, int s, int down_offset){
         if (gb.buffer[i] == '\n') render_line_counter++;
     }
     if (selection_start >= 0) handleHighlights(char_counter, selection_max, selection_min, render_line_counter);
-
+    
     terminalRenderScreen(down_offset);
     //printf("\n\n{[starti:%lld maxi:%lld], [selectionv:%d selection^:%d], cc:%lld}", start_index, max_index, selection_min, selection_max, char_counter);
 }

@@ -10,3 +10,17 @@ int startsWith(char* a, char* b){
     }
     return 1;
 }
+
+
+void copyToClipBoard(char* string){
+    size_t len = strlen(string);
+
+    HGLOBAL hgl = GlobalAlloc(GMEM_MOVEABLE, len+1);
+    memcpy(GlobalLock(hgl), string, len+1);
+    GlobalUnlock(hgl);
+
+    OpenClipboard(NULL);
+    EmptyClipboard();
+    SetClipboardData(CF_TEXT, hgl);
+    CloseClipboard();
+}

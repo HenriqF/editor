@@ -1,6 +1,5 @@
 #include "gap.h"
 
-int selection_start = -1;
 
 //init
 void initGb(GapBuffer* gb, size_t gap_size){
@@ -11,14 +10,36 @@ void initGb(GapBuffer* gb, size_t gap_size){
     gb->gap_size = gap_size;
     gb->gapl = 0;
     gb->gapr = gap_size-1;
+    gb->selection_start = -1;
+    gb->selecting = 0;
 }
 
 
 //getting content
+char* getCursorSubstring(GapBuffer gb, size_t min, size_t max){ // ASSUME QUE O CURSOR ESTÁ EM UM DOS EXTREMOS!!!!
+    char* result = malloc((max-min)+1);
+    size_t result_index = 0;
+
+    size_t i = min;
+    size_t limit = max;
+
+    if (min == gb.gapl){
+        size_t offset = gb.gapr - gb.gapl;
+        min += offset;
+        limit += offset+1;
+    }
+
+    for(; i < limit; i++){
+        if (gb.buffer[i] != 0) result[result_index++] = gb.buffer[i];
+    }
+    result[result_index] = '\0';
+    return result;
+}
+
 char* getText(GapBuffer gb){
     char* result = malloc(gb.buffer_size*sizeof(char)+1);
-
     size_t result_index = 0;
+
     for(size_t i = 0; i < gb.gapl; i++){
         if (gb.buffer[i] != 0) result[result_index++] = gb.buffer[i];
     }
