@@ -7,7 +7,7 @@
 
 //info
     //geral
-    #define VER "08.04.2026.1"
+    #define VER "12.04.2026.1"
     char* editor_file_path;
 
     //cmdbar
@@ -54,13 +54,22 @@ int loadFile(GapBuffer* gb, char* path){
 
 //
 void handleKBInput(char c){
-    if (gb->selecting >= 0){
-        if (!shift_pressed) {
-            gb->selecting = 0;
-            gb->selection_start = -1;
+    if (gb->selecting > 0){
+        size_t selection_start;
+        size_t selection_end;
+        if ((size_t)gb->selection_start > gb->gapl){
+            selection_start = gb->gapl;
+            selection_end = gb->selection_start;
         }
+        else{
+            selection_start = gb->selection_start;
+            selection_end = gb->gapl;
+        }
+        while (gb->gapl != selection_end) moveRight(gb);
+        while (gb->gapl != selection_start) deleteChar(gb);
+        gb->selecting = 0;
+        gb->selection_start = -1;
     }
-    
     
     switch (c){
         case 13:
@@ -80,6 +89,7 @@ void handleKBInput(char c){
         default:
             insertChar(gb, c);
     }
+    
     
     render(*gb, show_gap_buffer, down_offset);
 }

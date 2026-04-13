@@ -1,8 +1,10 @@
 #include "render.h"
 
 //TELA TERMINAL==========================================
-#define LINES 21
-#define SCREEN_SIZE 2501 //incluir terminador nulo
+#define LINES 27
+#define SCREEN_SIZE 121*LINES+1 //incluir terminador nulo
+
+
 char screen[SCREEN_SIZE] = {0};
 
 char new_screen[SCREEN_SIZE] = {0};
