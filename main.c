@@ -71,7 +71,7 @@ void handleKBInput(char c){
         gb->selection_start = -1;
     }
     
-    switch (c){
+    switch (c){ 
         case 13:
             insertChar(gb, '\n');
             break;
@@ -288,6 +288,7 @@ BarAcReturn handleBarActions(char* command){
 int main(int argc, char** argv){
     SetConsoleOutputCP(CP_UTF8);
     printf("\e[1;1H\e[2J");
+    //printf("\033[2 q");
     printf("\033[?25l");
 
     initGb(&editor, EDITORBUFSIZE);
@@ -298,8 +299,11 @@ int main(int argc, char** argv){
     //
     relative_mode = 0;
 
-    cursor = malloc(2*sizeof(char));
-    strncpy(cursor, "<", 2);
+    // cursor = malloc(2*sizeof(char));
+    // strncpy(cursor, "<", 2);
+    cursor = malloc(1*sizeof(char));
+    strncpy(cursor, "", 1);
+
     GBACCENT = malloc(6*sizeof(char));
     strncpy(GBACCENT, GBGRN, 6);
     GBACCENT_SIZE = 5;
@@ -368,8 +372,8 @@ int main(int argc, char** argv){
                 printf("versão " VER ". Execute 'ajuda' para saber mais.");
 
                 for (int i = 0; i < CMDBARDOWN+1; i++)printf("\n");
-
                 printf("%s", last_cmd_bar_msg);
+
             }
         }
         
